@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Q&A Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>PDF Question & Answer Generator</h1>
+
+    <form id="uploadForm" method="POST" enctype="multipart/form-data">
+        <input type="file" name="pdf_file" accept=".pdf">
+        <label for="num_questions">Number of Questions:</label>
+        <input type="number" id="num_questions" name="num_questions" value="5" min="1">
+        <button type="submit">Generate Q&A</button>
+    </form>
+
+    <div id="results">
+        <h2>Generated Q&A:</h2>
+        <div id="qaPairs"></div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const qaPairsDiv = document.getElementById('qaPairs');
+                qaPairsDiv.innerHTML = '';
+
+                if (data.error) {
+                    qaPairsDiv.innerHTML = `<p>Error: ${data.error}</p>`;
+                } else {
+                    data.qa_pairs.forEach((pair, index) => {
+                        qaPairsDiv.innerHTML += `
+                            <p><strong>Pair ${index + 1}:</strong></p>
+                            <p>Q: ${pair.question}</p>
+                            <p>A: ${pair.answer}</p>
+                        `;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('qaPairs').innerHTML = '<p>An error occurred.</p>';
+            });
+        });
+    </script>
+</body>
+</html>
